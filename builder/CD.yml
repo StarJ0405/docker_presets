@@ -62,10 +62,29 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.KEY }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
           source: "app_image.tar"
           target: ${{ secrets.HOME }}
-      - name: Deploy and Load on Server
+      # - name: Deploy and Load on Server With Admin # Root 권한이 있는 경우
+      #   uses: appleboy/ssh-action@master
+      #   id: deploy
+      #   env:
+      #     HOME: ${{ secrets.HOME }}
+      #   with:
+      #     host: ${{ secrets.HOST }}
+      #     username: ${{ secrets.USERNAME }}
+      #     key: ${{ secrets.KEY }}
+      #     port: ${{ secrets.PORT }}
+      #     script: |
+      #       whoami
+      #       rm -rf ${HOME}/builder
+      #       mkdir -p ${HOME}/builder
+      #       sudo docker load -i ${HOME}/app_image.tar
+      #       rm ${HOME}/app_image.tar
+      #       sudo docker rm -f $(sudo docker ps -aqf "name=builder") # 컨테이너 찾아서 종료
+      #       sudo docker run -d -v ${HOME}/builder:/share --name "builder" local-app:latest
+      - name: Deploy and Load on Server With Non-Admin # Root 권한이 없는 경우
         uses: appleboy/ssh-action@master
         id: deploy
         env:
@@ -73,11 +92,10 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.KEY }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
           script: |
             whoami
+            rm -rf ${HOME}/builder
             mkdir -p ${HOME}/builder
-            sudo docker load -i ${HOME}/app_image.tar
-            rm ${HOME}/app_image.tar
-            sudo docker rm -f $(sudo docker ps -aqf "name=builder") # 컨테이너 찾아서 종료            
-            sudo docker run -d -v ${HOME}/builder:/share --name "builder" local-app:latest
+            sudo "${HOME}/deploy.sh" "${HOME}"

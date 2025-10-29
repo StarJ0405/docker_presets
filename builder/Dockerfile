@@ -67,7 +67,7 @@ COPY ./Back/yarn.lock /builder/Back/
 # RUN chmod +x ./run.sh
 # CMD ["/run.sh"]
 
-# 위에 것 사용시 주석처리할것!
+# 환경 체크시 주석처리할것!
 WORKDIR /
 COPY copy.sh copy.sh
 RUN chmod +x ./copy.sh
