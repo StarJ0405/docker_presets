@@ -45,6 +45,7 @@ COPY --from=builder /Front/.next/. /builder/Front/.next2/
 # 프론트 공통파일
 COPY ./Front/public/. /builder/Front/public/.
 COPY ./Front/package*.json /builder/Front/
+COPY ./Front/.env* /builder/Front/
 # 백엔드(Java)
 # COPY --from=builder /Back/build/libs/*.jar /builder/Back/
 
@@ -54,6 +55,7 @@ COPY --from=builder /Back/dist/. /builder/Back/dist2/
 # 백엔드 공통파일
 COPY ./Back/package*.json /builder/Back/
 COPY ./Back/yarn.lock /builder/Back/
+COPY ./Back/.env* /builder/Back/
 
 # 이미지 자체로 서버 돌리는 경우 제외 사용 금지(copy용으로는 node_modules 없는게 좋음)
 # WORKDIR /builder/Front
@@ -67,7 +69,7 @@ COPY ./Back/yarn.lock /builder/Back/
 # RUN chmod +x ./run.sh
 # CMD ["/run.sh"]
 
-# 환경 체크시 주석처리할것!
+# 위에 것 사용시 주석처리할것!
 WORKDIR /
 COPY copy.sh copy.sh
 RUN chmod +x ./copy.sh

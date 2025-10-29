@@ -6,9 +6,9 @@ on:
   #    branches:
   #      - main
   # 풀 리퀘스트시
-  #  pull_request:
-  #    branches:
-  #      - main
+  pull_request:
+    branches:
+      - main
   # 수동
   workflow_dispatch:
     inputs:
@@ -39,7 +39,7 @@ jobs:
       #     APPLICATION_SECRET: ${{secrets.APPLICATION_SECRET}}
       #   run: |
       #     mkdir -p Back/src/main/resources/
-      #     echo "$APPLICATION_SECRET" > Back/src/main/resources/application.yml
+      #     printf "%s" "$APPLICATION_SECRET" > Back/src/main/resources/application.yml
       - name: env.production 생성
         env:
           ACTIONS_STEP_DEBUG: true
@@ -48,8 +48,8 @@ jobs:
         run: |
           mkdir -p Back
           mkdir -p Front
-          echo "$FRONT_ENV" > Front/env.production
-          echo "$BACK_ENV" > Back/env.production
+          printf "%s" "$FRONT_ENV" > Front/.env.production
+          printf "%s" "$BACK_ENV" > Back/.env.production
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
         with:
