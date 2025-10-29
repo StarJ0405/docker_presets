@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e # 명령어 실행 중 오류 발생 시 즉시 종료
 # 권한설정
-# sudo chown root:root /home/아이디/deploy
-# sudo chmod 555 /home/아이디/deploy.sh
+# sudo chown root:root /home/아이디/deploy.sh
+# sudo chmod 500 /home/아이디/deploy.sh
 
 # 0. 환경변수 설정
 HOME="$1"

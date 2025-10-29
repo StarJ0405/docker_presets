@@ -8,7 +8,7 @@
     - 기본적으로 파일은 수정할 필요 없음
     - 파일의 수정 권한을 관리자 계정으로 변경
       - 그룹설정) sudo chown root:root ./deploy.sh
-      - 권한설정) chmod 555 ./deploy.sh
+      - 권한설정) chmod 500 ./deploy.sh
 2. GitHub 설정
   - Setting --> Security --> Secrets and variables --> Actions --> New repository secret 으로 아래 내용 추가
     - BACK_ENV : 백엔드 운영용 환경변수
