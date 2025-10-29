@@ -50,52 +50,77 @@ jobs:
           mkdir -p Front
           echo "$FRONT_ENV" > Front/env.production
           echo "$BACK_ENV" > Back/env.production
-      - name: Build and Save Docker Image
-        run: |
-          # 1. 이미지 빌드 (로컬 태그 사용)
-          docker build -t local-app:latest .
-          # 2. 이미지를 tar 파일로 저장
-          docker save local-app:latest -o app_image.tar
-      - name: Deploy to server
-        uses: appleboy/scp-action@master
-        id: move_file
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          source: "app_image.tar"
-          target: ${{ secrets.HOME }}
-      # - name: Deploy and Load on Server With Admin # Root 권한이 있는 경우
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }} # Access Token 사용
+      - name: Build and Push Docker Image
+        env:
+          IMAGE_FULL_TAG: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}:${{ secrets.DOCKER_TAG }}
+        run: |
+          # 1. 이미지 빌드
+          docker build -t ${IMAGE_FULL_TAG} .
+          # 2. 이미지 푸시
+          docker push ${IMAGE_FULL_TAG}
+
+      # - name: Deploy and Load on Server With Admin
       #   uses: appleboy/ssh-action@master
       #   id: deploy
       #   env:
       #     HOME: ${{ secrets.HOME }}
+      #     IMAGE_FULL_TAG: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}:${{ secrets.DOCKER_TAG }}
+      #     DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      #     REGISTRY_URL: https://index.docker.io/v1/
+      #     DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+      #     CONTAINER_NAME: builder
+      #     VOLUME_PATH: ${{ secrets.HOME}}/builder
       #   with:
       #     host: ${{ secrets.HOST }}
       #     username: ${{ secrets.USERNAME }}
       #     key: ${{ secrets.KEY }}
       #     port: ${{ secrets.PORT }}
       #     script: |
-      #       whoami
-      #       rm -rf ${HOME}/builder
-      #       mkdir -p ${HOME}/builder
-      #       sudo docker load -i ${HOME}/app_image.tar
-      #       rm ${HOME}/app_image.tar
-      #       sudo docker rm -f $(sudo docker ps -aqf "name=builder") # 컨테이너 찾아서 종료
-      #       sudo docker run -d -v ${HOME}/builder:/share --name "builder" local-app:latest
+      #       echo "${DOCKER_TOKEN}" | docker login ${REGISTRY_URL} -u "${DOCKER_USERNAME}" --password-stdin
+      #       sudo docker pull "${IMAGE_FULL_TAG}"
+      #       docker logout ${REGISTRY_URL}
+      # sudo rm -rf ${VOLUME_PATH}
+      # sudo mkdir -p ${VOLUME_PATH}
+      # if docker ps -qf "name=${CONTAINER_NAME}" | grep -q .; then
+      #     docker stop "${CONTAINER_NAME}"
+      #     docker rm -f "${CONTAINER_NAME}"
+      # else
+      #     # 실행 중이지 않지만 존재하는 컨테이너도 제거 (선택 사항)
+      #     if docker ps -aqf "name=${CONTAINER_NAME}" | grep -q .; then
+      #         docker rm -f "${CONTAINER_NAME}"
+      #     fi
+      # fi
+      # docker run -d \
+      #   -v "${VOLUME_PATH}":/share \
+      #   --name "${CONTAINER_NAME}" \
+      #   "${IMAGE_FULL_TAG}"
       - name: Deploy and Load on Server With Non-Admin # Root 권한이 없는 경우
         uses: appleboy/ssh-action@master
         id: deploy
         env:
           HOME: ${{ secrets.HOME }}
+          IMAGE_FULL_TAG: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}:${{ secrets.DOCKER_TAG }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          REGISTRY_URL: https://index.docker.io/v1/
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+          CONTAINER_NAME: builder
+          VOLUME_PATH: ${{ secrets.HOME}}/builder
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            whoami
-            rm -rf ${HOME}/builder
-            mkdir -p ${HOME}/builder
-            sudo "${HOME}/deploy.sh" "${HOME}"
+            sudo "${HOME}/deploy.sh" \
+              "${{ secrets.HOME }}" \
+              "${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}:${{ secrets.DOCKER_TAG }}" \
+              "${{ secrets.DOCKER_USERNAME }}" \
+              "https://index.docker.io/v1/" \
+              "${{ secrets.DOCKER_TOKEN }}" \
+              "builder" \
+              "${{ secrets.HOME}}/builder"
