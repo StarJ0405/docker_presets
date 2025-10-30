@@ -14,7 +14,7 @@ CONTAINER_NAME="$6"
 VOLUME_PATH="$7"
 
 #1. Docker 로그인
-echo "${DOCKER_TOKEN}" | sudo docker login ${REGISTRY_URL} -username "${DOCKER_USERNAME}" --password-stdin
+echo "${DOCKER_TOKEN}" | sudo docker login ${REGISTRY_URL} --username "${DOCKER_USERNAME}" --password-stdin
 
 #2. Docker pull
 sudo docker pull "${IMAGE_FULL_TAG}"
