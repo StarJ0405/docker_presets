@@ -4,7 +4,7 @@ WORKDIR /Front
 COPY /Front/*.json /Front/
 COPY /Front/.env* /Front/
 RUN npm install
-COPY /Front/public /Front/
+COPY /Front/public/. /Front/public/
 COPY /Front/src/. /Front/src/
 COPY /Front/*.mjs /Front/
 COPY /Front/*.ts /Front/
@@ -46,6 +46,7 @@ COPY --from=builder /Front/.next/. /builder/Front/.next2/
 COPY ./Front/public/. /builder/Front/public/.
 COPY ./Front/package*.json /builder/Front/
 COPY ./Front/.env* /builder/Front/
+COPY ./Front/.*ts /builder/Front/
 # 백엔드(Java)
 # COPY --from=builder /Back/build/libs/*.jar /builder/Back/
 
